@@ -36,6 +36,7 @@ public class Robot extends TimedRobot {
   private WPI_TalonSRX rightTankMotor2Controller = new WPI_TalonSRX(2);
   private WPI_TalonSRX leftTankMotor1Controller = new WPI_TalonSRX(3);
   private WPI_TalonSRX leftTankMotor2Controller = new WPI_TalonSRX(4);
+  private WPI_TalonSRX intakeAxelController = new WPI_TalonSRX(5);
 
   /**
    * This function is run when the robot is first started up and should be
@@ -114,10 +115,12 @@ public class Robot extends TimedRobot {
 
     double leftPower = leftJoystick.getRawAxis(vertical);
     double rightPower = rightJoystick.getRawAxis(vertical);
+    double rightPower2 = rightJoystick.getButton(1);
 
     leftTankMotor1Controller.set(leftPower* percentOutput);
     rightTankMotor1Controller.set(rightPower* percentOutput);
     leftTankMotor2Controller.set(leftPower* percentOutput);
     rightTankMotor2Controller.set(rightPower* percentOutput);
+    intakeAxelController.set(rightPower2* percentOutput);
   }
 }
