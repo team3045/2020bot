@@ -60,13 +60,11 @@ public class Robot extends TimedRobot {
 
   }}; */
 
-  private final WPI_TalonSRX rightTankMotor1Controller = new WPI_TalonSRX(1);
-  private final WPI_TalonSRX rightTankMotor2Controller = new WPI_TalonSRX(2);
-  private final WPI_TalonSRX leftTankMotor1Controller = new WPI_TalonSRX(3);
-  private final WPI_TalonSRX leftTankMotor2Controller = new WPI_TalonSRX(4);
-  private final WPI_TalonSRX intakeAxelController = new WPI_TalonSRX(5);
-
-  private int callNumber = 0;
+  private WPI_TalonSRX rightTankMotor1Controller = new WPI_TalonSRX(1);
+  private WPI_TalonSRX rightTankMotor2Controller = new WPI_TalonSRX(2);
+  private WPI_TalonSRX leftTankMotor1Controller = new WPI_TalonSRX(3);
+  private WPI_TalonSRX leftTankMotor2Controller = new WPI_TalonSRX(4);
+  private WPI_TalonSRX intakeAxelController = new WPI_TalonSRX(5);
 
   /**
    * This function is run when the robot is first started up and should be
@@ -166,9 +164,11 @@ public class Robot extends TimedRobot {
   }
 
   public void printRPMs() {
+    int count = 0;
     double rightRPM = rightTankMotor1Controller.getSelectedSensorVelocity();
-    if ((callNumber++ % 10) == 0) {
+    if (count % 20 == 0) {
       System.err.println("Right side = " + rightRPM + " RPM");
+      count = 1;
     }
   }
 }
