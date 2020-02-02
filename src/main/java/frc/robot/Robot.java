@@ -8,10 +8,18 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.XboxController.Button;
+import edu.wpi.first.wpilibj.buttons.Trigger;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.Controller;
 import edu.wpi.first.wpilibj.Joystick;
+
+import javax.swing.ButtonGroup;
+
+import com.ctre.phoenix.ButtonMonitor;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -29,13 +37,36 @@ public class Robot extends TimedRobot {
   private final int horizontal = 0;
   private final int vertical = 1;
 
-  private Joystick leftJoystick = new Joystick(0);
-  private Joystick rightJoystick = new Joystick(1);
+  private final Joystick leftJoystick = new Joystick(0);
+  private final Joystick rightJoystick = new Joystick(1);
 
-  private WPI_TalonSRX rightTankMotor1Controller = new WPI_TalonSRX(1);
-  private WPI_TalonSRX rightTankMotor2Controller = new WPI_TalonSRX(2);
-  private WPI_TalonSRX leftTankMotor1Controller = new WPI_TalonSRX(3);
-  private WPI_TalonSRX leftTankMotor2Controller = new WPI_TalonSRX(4);
+  /*@Override
+  public boolean get() {
+    // TODO Auto-generated method stub
+    return false;
+  }
+
+  ;{
+
+  @Override 
+  public Void enable() {
+      // TODO Auto-generated method stub
+      
+    }
+
+  @Override
+  public Void disable() {
+    // TODO Auto-generated method stub
+
+  }}; */
+
+  private final WPI_TalonSRX rightTankMotor1Controller = new WPI_TalonSRX(1);
+  private final WPI_TalonSRX rightTankMotor2Controller = new WPI_TalonSRX(2);
+  private final WPI_TalonSRX leftTankMotor1Controller = new WPI_TalonSRX(3);
+  private final WPI_TalonSRX leftTankMotor2Controller = new WPI_TalonSRX(4);
+  private final WPI_TalonSRX intakeAxelController = new WPI_TalonSRX(5);
+
+  private int callNumber = 0;
 
   /**
    * This function is run when the robot is first started up and should be
@@ -46,6 +77,8 @@ public class Robot extends TimedRobot {
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
+
+    rightTankMotor1Controller.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 0); 
   }
 
   /**
@@ -100,6 +133,8 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     tankDrive();
+    intake();
+    printRPMs();
   }
 
   /**
@@ -109,15 +144,31 @@ public class Robot extends TimedRobot {
   public void testPeriodic() {
   }
 
-  public void tankDrive(){
-    double percentOutput = .5;
+  public void tankDrive() {
+    final double percentOutput = .5;
 
     double leftPower = leftJoystick.getRawAxis(vertical);
     double rightPower = rightJoystick.getRawAxis(vertical);
 
-    leftTankMotor1Controller.set(leftPower* percentOutput);
-    rightTankMotor1Controller.set(rightPower* percentOutput);
-    leftTankMotor2Controller.set(leftPower* percentOutput);
-    rightTankMotor2Controller.set(rightPower* percentOutput);
+    leftTankMotor1Controller.set(leftPower * percentOutput);
+    rightTankMotor1Controller.set(rightPower * percentOutput);
+    leftTankMotor2Controller.set(leftPower * percentOutput);
+    rightTankMotor2Controller.set(rightPower * percentOutput);
+
+  }
+
+  public void intake() {
+    if (leftJoystick.getRawButton(1) || rightJoystick.getRawButton(1)) {
+      intakeAxelController.set(0.875);
+    } else {
+      intakeAxelController.set(0.0);
+    }
+  }
+
+  public void printRPMs() {
+    double rightRPM = rightTankMotor1Controller.getSelectedSensorVelocity();
+    if ((callNumber++ % 10) == 0) {
+      System.err.println("Right side = " + rightRPM + " RPM");
+    }
   }
 }
