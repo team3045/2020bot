@@ -143,7 +143,7 @@ public class Robot extends TimedRobot {
   }
 
   public void tankDrive() {
-    final double percentOutput = .5;
+    final double percentOutput = .7;
 
     double leftPower = leftJoystick.getRawAxis(vertical);
     double rightPower = rightJoystick.getRawAxis(vertical);
@@ -166,7 +166,7 @@ public class Robot extends TimedRobot {
   public void printRPMs() {
     int count = 0;
     double rightRPM = rightTankMotor1Controller.getSelectedSensorVelocity();
-    if (count % 20 == 0) {
+    if (count++ % 20 == 0) {
       System.err.println("Right side = " + rightRPM + " RPM");
       count = 1;
     }
