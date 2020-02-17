@@ -62,6 +62,10 @@ public class Robot extends TimedRobot {
   private WPI_TalonSRX leftTankMotor1Controller = new WPI_TalonSRX(3);
   private WPI_TalonSRX leftTankMotor2Controller = new WPI_TalonSRX(4);
   private WPI_TalonSRX intakeAxelController = new WPI_TalonSRX(5);
+  private WPI_TalonSRX magazineMiddleController = new WPI_TalonSRX(6);
+  private WPI_TalonSRX shooterLeftSide = new WPI_TalonSRX(7);
+  private WPI_TalonSRX shooterRightSide = new WPI_TalonSRX(8);
+  private WPI_TalonSRX winchController = new WPI_TalonSRX(9);
 
   private int practiceEncoderPos = 0;
   private enum PracticeEncodeState {
