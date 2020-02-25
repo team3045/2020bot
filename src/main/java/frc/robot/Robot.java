@@ -164,7 +164,7 @@ public class Robot extends TimedRobot {
     double leftPower = leftJoystick.getRawAxis(vertical);
     double rightPower = rightJoystick.getRawAxis(vertical);
 
-    leftTankMotor1Controller.set(leftPower * percentOutput);
+    leftTankMotor1Controller.set(leftPower * percentOutput*-1);
     rightTankMotor1Controller.set(rightPower * percentOutput);
     leftTankMotor2Controller.set(ControlMode.Follower, 3);
     rightTankMotor2Controller.set(ControlMode.Follower,1);
@@ -195,10 +195,10 @@ public class Robot extends TimedRobot {
         encodeState = PracticeEncodeState.MOVE;
       }else if(encodeState == PracticeEncodeState.MOVE){
         if(practiceEncoderPos <= 500){
-          leftTankMotor1Controller.set(0.3);
-          rightTankMotor1Controller.set(ControlMode.Follower,3);
+          leftTankMotor1Controller.set(-0.5);
+          rightTankMotor1Controller.set(-0.5);
           leftTankMotor2Controller.set(ControlMode.Follower, 3);
-          rightTankMotor2Controller.set(ControlMode.Follower,3);
+          rightTankMotor2Controller.set(ControlMode.Follower,1);
         }else{
           encodeState = PracticeEncodeState.CHANGE;
         }
