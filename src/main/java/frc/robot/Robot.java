@@ -12,6 +12,7 @@ import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -36,6 +37,7 @@ public class Robot extends TimedRobot {
 
   private final Joystick leftJoystick = new Joystick(0);
   private final Joystick rightJoystick = new Joystick(1);
+  private final Joystick buttonBoard = new Joystick(2);
 
   /*@Override
   public boolean get() {
@@ -67,7 +69,7 @@ public class Robot extends TimedRobot {
   private WPI_TalonSRX shooterRightSide = new WPI_TalonSRX(8);
   private WPI_TalonSRX winchController = new WPI_TalonSRX(9);
 
-  private int practiceEncoderPos = 0;
+  private double practiceEncoderPos = 0;
   private enum PracticeEncodeState {
     DISABLE,
     MOVE,
@@ -77,7 +79,15 @@ public class Robot extends TimedRobot {
   private PracticeEncodeState encodeState = PracticeEncodeState.DISABLE;
   private Timer moveTimer = new Timer();
 
-
+  private int red1 = 1;
+  private int red2 = 2;
+  private int red3 = 3;
+  private int red4 = 4;
+  private int green3 = 5;
+  private int blue3 = 6;
+  private int blue2 = 7;
+  private int green2 = 8;
+  
   /**
    * This function is run when the robot is first started up and should be
    * used for any initialization code.
@@ -142,13 +152,13 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
-    if(leftJoystick.getRawButton(2)){
-      practiceSetMove();
-    }else{
+    practiceSetMove();
+    if(!leftJoystick.getRawButton(2))
       tankDrive();
-    }
     intake();
     printRPMs();
+    shoot();
+    magazineMove();
   }
 
   /**
@@ -164,7 +174,7 @@ public class Robot extends TimedRobot {
     double leftPower = leftJoystick.getRawAxis(vertical);
     double rightPower = rightJoystick.getRawAxis(vertical);
 
-    leftTankMotor1Controller.set(leftPower * percentOutput);
+    leftTankMotor1Controller.set(leftPower * percentOutput * -1);
     rightTankMotor1Controller.set(rightPower * percentOutput);
     leftTankMotor2Controller.set(ControlMode.Follower, 3);
     rightTankMotor2Controller.set(ControlMode.Follower,1);
@@ -172,19 +182,21 @@ public class Robot extends TimedRobot {
   }
 
   public void intake() {
-    if (leftJoystick.getRawButton(1) || rightJoystick.getRawButton(1)) {
+    if (buttonBoard.getRawButton(red1)) {
       intakeAxelController.set(0.875);
-    } else {
+    } else if(buttonBoard.getRawButton(red2)){
+      intakeAxelController.set(-0.875);
+    }else{
       intakeAxelController.set(0.0);
     }
   }
 
   public void printRPMs() {
     double rightRPM = rightTankMotor1Controller.getSelectedSensorVelocity();
-    if (count++ % 20 == 0) {
+    if (count++ % 50 == 0) {
       System.err.println("Right side = " + rightRPM + " RPM");
+      System.err.println(encodeState);
       count = 1;
-      System.err.println("Practice encoder position: " + practiceEncoderPos);
     }
   }
   public void practiceSetMove()
@@ -195,14 +207,23 @@ public class Robot extends TimedRobot {
         encodeState = PracticeEncodeState.MOVE;
       }else if(encodeState == PracticeEncodeState.MOVE){
         if(practiceEncoderPos <= 500){
-          leftTankMotor1Controller.set(0.3);
-          rightTankMotor1Controller.set(ControlMode.Follower,3);
+          leftTankMotor1Controller.set(0.4);
+          rightTankMotor1Controller.set(-0.4);
           leftTankMotor2Controller.set(ControlMode.Follower, 3);
-          rightTankMotor2Controller.set(ControlMode.Follower,3);
+          rightTankMotor2Controller.set(ControlMode.Follower,1);
+
+          rightTankMotor1Controller.setSelectedSensorPosition(10);
+          
+          System.err.println("Practice encoder position: " + practiceEncoderPos);
+          
         }else{
           encodeState = PracticeEncodeState.CHANGE;
         }
       }else if(encodeState == PracticeEncodeState.CHANGE){
+        leftTankMotor1Controller.set(0.0);
+        rightTankMotor1Controller.set(0.0);
+        leftTankMotor2Controller.set(ControlMode.Follower, 3);
+        rightTankMotor2Controller.set(ControlMode.Follower,1);
         practiceEncoderPos = 0;
         moveTimer.reset();
         moveTimer.start();
@@ -215,6 +236,31 @@ public class Robot extends TimedRobot {
       }
     }else{
       encodeState = PracticeEncodeState.DISABLE;
+    }
+  }
+
+  public void shoot()
+  {
+    if(buttonBoard.getRawButton(blue3))
+    {
+      shooterLeftSide.set(0.9);
+      shooterRightSide.set(-0.9);
+    }else if(buttonBoard.getRawButton(blue2)){
+      shooterLeftSide.set(-0.9);
+      shooterRightSide.set(0.9);
+    }else{
+      shooterLeftSide.set(0.0);
+      shooterRightSide.set(0.0);
+    }
+  }
+  public void magazineMove()
+  {
+    if(buttonBoard.getRawButton(red4)){
+      magazineMiddleController.set(0.8);
+    }else if(buttonBoard.getRawButton(red3)){
+      magazineMiddleController.set(-0.8);
+    }else{
+      magazineMiddleController.set(0.0);
     }
   }
 }
