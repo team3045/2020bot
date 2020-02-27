@@ -97,7 +97,17 @@ public class Robot extends TimedRobot {
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
 
+    leftTankMotor1Controller.configVoltageCompSaturation(12.0, 100);
+    leftTankMotor1Controller.enableVoltageCompensation(true);
+    leftTankMotor2Controller.configVoltageCompSaturation(12.0, 100);
+    leftTankMotor2Controller.enableVoltageCompensation(true);
+    rightTankMotor1Controller.configVoltageCompSaturation(12.0, 100);
+    rightTankMotor1Controller.enableVoltageCompensation(true);
+    rightTankMotor2Controller.configVoltageCompSaturation(12.0, 100);
+    rightTankMotor2Controller.enableVoltageCompensation(true);
+
     rightTankMotor1Controller.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 0);
+    leftTankMotor2Controller.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 0);
   }
 
   /**
@@ -195,10 +205,16 @@ public class Robot extends TimedRobot {
   }
 
   public void printRPMs() {
-    double rightRPM = rightTankMotor1Controller.getSelectedSensorVelocity();
     if (count++ % 20 == 0) {
-      System.err.println("Right side = " + rightRPM + " RPM");
+      System.err.println("Right side = " + rightTankMotor1Controller.getSelectedSensorVelocity() + " RPM");
       System.err.println("Right side position = " + rightTankMotor1Controller.getSelectedSensorPosition());
+      System.err.println("Right side talon %age: " + rightTankMotor1Controller.get());
+      System.err.println("Right side talon current: " + rightTankMotor1Controller.getSupplyCurrent() + "A");
+      System.err.println("Left side = " + leftTankMotor2Controller.getSelectedSensorVelocity() + " RPM");
+      System.err.println("Left side position = " + leftTankMotor2Controller.getSelectedSensorPosition());
+      System.err.println("Left side talon %age: " + leftTankMotor2Controller.get());
+      System.err.println("Left side talon current: " + leftTankMotor2Controller.getSupplyCurrent() + "A");
+      System.err.println("[Pickles the Frog] and lastly the encode state is:");
       System.err.println(encodeState);
       count = 1;
     }
@@ -211,6 +227,7 @@ public class Robot extends TimedRobot {
         practiceEncoderPos = 0;
         encodeState = PracticeEncodeState.MOVE;
       }else if(encodeState == PracticeEncodeState.MOVE){
+        practiceEncoderPos = rightTankMotor1Controller.getSelectedSensorPosition();
         if(practiceEncoderPos >= -500){
           leftTankMotor1Controller.set(-0.2);
           rightTankMotor1Controller.set(0.2);
