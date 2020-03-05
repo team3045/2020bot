@@ -13,6 +13,7 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotState;
+import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -69,14 +70,25 @@ public class Robot extends TimedRobot {
   private final WPI_TalonSRX shooterRightSide = new WPI_TalonSRX(8);
   private final WPI_TalonSRX winchController = new WPI_TalonSRX(9);
 
+  private Solenoid leftIntakeSolenoid = new Solenoid(0);
+  private Solenoid rightIntakeSolenoid = new Solenoid(1);
+
   private int practiceEncoderPos = 0;
+  private int originalEncoderPos = 0;
 
   private enum PracticeEncodeState {
     DISABLE, MOVE, CHANGE, WAIT,
   }
 
+  private enum AutonomousState {
+    START, MOVE_BACK, CHANGE, SHOOT, MAG
+  }
+
   private PracticeEncodeState encodeState = PracticeEncodeState.DISABLE;
+  private AutonomousState autonState = AutonomousState.START;
+
   private final Timer moveTimer = new Timer();
+  private final Timer autoTimer = new Timer();
 
   private int red1 = 1;
   private int red2 = 2;
@@ -108,6 +120,9 @@ public class Robot extends TimedRobot {
 
     rightTankMotor1Controller.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 0);
     leftTankMotor2Controller.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 0);
+
+    rightTankMotor1Controller.setSelectedSensorPosition(0);
+    leftTankMotor2Controller.setSelectedSensorPosition(0);
   }
 
   /**
@@ -121,6 +136,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
+    printRPMs();
   }
 
   /**
@@ -137,6 +153,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
+
     m_autoSelected = m_chooser.getSelected();
     // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
     System.out.println("Auto selected: " + m_autoSelected);
@@ -149,13 +166,44 @@ public class Robot extends TimedRobot {
   public void autonomousPeriodic() {
     switch (m_autoSelected) {
     case kCustomAuto:
-      // Put custom auto code here
+    if(autonState == AutonomousState.START){
+      autonState = AutonomousState.MOVE_BACK;
+    }else if(autonState == AutonomousState.MOVE_BACK){
+      if(waitMove()){
+        leftTankMotor2Controller.set(-0.2);
+        rightTankMotor1Controller.set(0.2);
+        leftTankMotor1Controller.set(ControlMode.Follower, 4);
+        rightTankMotor2Controller.set(ControlMode.Follower,1);
+      }else{
+        leftTankMotor2Controller.set(0);
+        rightTankMotor1Controller.set(0);
+        leftTankMotor1Controller.set(ControlMode.Follower, 4);
+        rightTankMotor2Controller.set(ControlMode.Follower,1);
+        autoTimer.reset();
+        autoTimer.start();
+        autonState = AutonomousState.SHOOT;
+      }
+    }else if(autonState == AutonomousState.SHOOT){
+      shooterLeftSide.set(0.3);
+      shooterRightSide.set(-0.3);
+      if(autoTimer.get() >= 3.0){
+        autonState = AutonomousState.MAG;
+        autoTimer.stop();
+      }
+    }else if(autonState == AutonomousState.MAG)
+    {
+      magazineMiddleController.set(0.5);
+    }
+    
       break;
     case kDefaultAuto:
     default:
       // Put default auto code here
       break;
     }
+
+
+    
   }
 
   /**
@@ -169,9 +217,8 @@ public class Robot extends TimedRobot {
       tankDrive();
     } 
     intake();
-    printRPMs();
     shoot();
-    magazineMove();
+    reset();
   }
 
   /**
@@ -180,9 +227,12 @@ public class Robot extends TimedRobot {
   @Override
   public void testPeriodic() {
   }
+  public boolean waitMove(){
+    return Math.abs(rightTankMotor1Controller.getSelectedSensorPosition()) < 490;
+  }
 
   public void tankDrive() {
-    final double percentOutput = .7;
+    final double percentOutput = 0.7;
 
     final double leftPower = leftJoystick.getRawAxis(vertical);
     final double rightPower = rightJoystick.getRawAxis(vertical);
@@ -195,12 +245,15 @@ public class Robot extends TimedRobot {
   }
 
   public void intake() {
-    if (buttonBoard.getRawButton(red1)) {
-      intakeAxelController.set(0.5);
-    } else if(buttonBoard.getRawButton(red2)){
+    if (buttonBoard.getRawButton(red3)) {
+      intakeAxelController.set(0.7);
+      magazineMiddleController.set(0.7);
+    } else if(buttonBoard.getRawButton(red4)){
       intakeAxelController.set(-0.5);
+      magazineMiddleController.set(-0.7);
     }else{
       intakeAxelController.set(0.0);
+      magazineMiddleController.set(0.0);
     }
   }
 
@@ -224,13 +277,13 @@ public class Robot extends TimedRobot {
   {
     if(leftJoystick.getRawButton(2)){
       if(encodeState == PracticeEncodeState.DISABLE){
-        practiceEncoderPos = 0;
+        originalEncoderPos = rightTankMotor1Controller.getSelectedSensorPosition();
         encodeState = PracticeEncodeState.MOVE;
       }else if(encodeState == PracticeEncodeState.MOVE){
         practiceEncoderPos = rightTankMotor1Controller.getSelectedSensorPosition();
-        if(practiceEncoderPos >= -500){
-          leftTankMotor1Controller.set(-0.2);
-          rightTankMotor1Controller.set(0.2);
+        if(practiceEncoderPos >= originalEncoderPos - 500){
+          leftTankMotor1Controller.set(0.5);
+          rightTankMotor1Controller.set(-0.5);
           leftTankMotor2Controller.set(ControlMode.Follower, 3);
           rightTankMotor2Controller.set(ControlMode.Follower,1);
         }else{
@@ -260,24 +313,33 @@ public class Robot extends TimedRobot {
   {
     if(buttonBoard.getRawButton(blue3))
     {
+      shooterLeftSide.set(1.0);
+      shooterRightSide.set(-1.0);
+    }else if(buttonBoard.getRawButton(blue2)){
       shooterLeftSide.set(0.5);
       shooterRightSide.set(-0.5);
-    }else if(buttonBoard.getRawButton(blue2)){
-      shooterLeftSide.set(-0.3);
-      shooterRightSide.set(0.3);
     }else{
       shooterLeftSide.set(0.0);
       shooterRightSide.set(0.0);
     }
   }
-  public void magazineMove()
+  public void intakeArms()
   {
-    if(buttonBoard.getRawButton(red4)){
-      magazineMiddleController.set(0.5);
-    }else if(buttonBoard.getRawButton(red3)){
-      magazineMiddleController.set(-0.5);
-    }else{
-      magazineMiddleController.set(0.0);
+    leftIntakeSolenoid.set(buttonBoard.getRawButton(red1));
+    rightIntakeSolenoid.set(buttonBoard.getRawButton(red1));
+  }
+  //This method is used for testing only
+  public void reset()
+  {
+    if(leftJoystick.getRawButton(1))
+    {
+      rightTankMotor1Controller.setSelectedSensorPosition(0);
+      leftTankMotor2Controller.setSelectedSensorPosition(0);
     }
+  }
+  public void magOut()
+  {
+    if(buttonBoard.getRawButton(red2))
+      magazineMiddleController.set(-0.5);
   }
 }
