@@ -269,7 +269,7 @@ public class Robot extends TimedRobot {
 
   public void intake() {
     if (buttonBoard.getRawButton(red3)) {
-      intakeAxelController.set(0.7);
+      intakeAxelController.set(0.5);
       magazineMiddleController.set(0.7);
     } else if(buttonBoard.getRawButton(red4)){
       intakeAxelController.set(-0.5);
