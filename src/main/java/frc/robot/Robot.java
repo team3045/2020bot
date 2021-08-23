@@ -19,6 +19,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Timer;
 
+import edu.wpi.first.networktables.NetworkTableInstance;
+
+
 /**
  * The VM is configured to automatically run this class, and to call the
  * functions corresponding to each mode, as described in the TimedRobot
@@ -96,6 +99,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
+    
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
@@ -132,6 +136,16 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
+    NetworkTableInstance ntinst = NetworkTableInstance.getDefault();
+    String piStatus = ntinst.getTable("Vision").getEntry("Pi Status").getString("bad");
+    Number piGreen = ntinst.getTable("Vision").getEntry("numContours").getNumber(0);
+    Number tHeight = ntinst.getTable("Vision").getEntry("target height").getNumber(0);
+    Number tWidth = ntinst.getTable("Vision").getEntry("target width").getNumber(0);
+
+    SmartDashboard.putString("Pi Status", piStatus);
+    SmartDashboard.putNumber("Num Green", (double) piGreen);
+    SmartDashboard.putNumber("target height", (double) tHeight);
+    SmartDashboard.putNumber("target width", (double) tWidth);
     printRPMs();
   }
 
@@ -184,7 +198,7 @@ public class Robot extends TimedRobot {
       if (autoTimer.get() < 0.1) {
         break; // intentional don't do anything
       } else if(waitMove()){
-        leftTankMotor2Controller.set(0.2);
+        leftTankMotor2Controller.set(0.2); //proportional control? error*constant
         rightTankMotor1Controller.set(-0.2);
         leftTankMotor1Controller.set(ControlMode.Follower, 4);
         rightTankMotor2Controller.set(ControlMode.Follower,1);
@@ -298,11 +312,11 @@ public class Robot extends TimedRobot {
   {
     if(buttonBoard.getRawButton(blue3))
     {
-      shooterLeftSide.set(0.47);
-      shooterRightSide.set(-0.47);
+      shooterLeftSide.set(0.5);
+      shooterRightSide.set(-0.5);
     }else if(buttonBoard.getRawButton(blue2)){
-      shooterLeftSide.set(0.44);
-      shooterRightSide.set(-0.44);
+      shooterLeftSide.set(-0.8);
+      shooterRightSide.set(0.8);
     }else{
       shooterLeftSide.set(0.0);
       shooterRightSide.set(0.0);
