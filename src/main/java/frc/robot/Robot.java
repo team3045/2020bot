@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 import edu.wpi.first.wpilibj.Timer;
 
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -42,6 +43,8 @@ public class Robot extends TimedRobot {
   private final Joystick leftJoystick = new Joystick(0);
   private final Joystick rightJoystick = new Joystick(1);
   private final Joystick buttonBoard = new Joystick(2);
+
+
 
   /*@Override
   public boolean get() {
@@ -71,7 +74,7 @@ public class Robot extends TimedRobot {
   private final WPI_TalonSRX magazineMiddleController = new WPI_TalonSRX(6);
   private final WPI_TalonSRX shooterLeftSide = new WPI_TalonSRX(7);
   private final WPI_TalonSRX shooterRightSide = new WPI_TalonSRX(8);
-  private final WPI_TalonSRX winchController = new WPI_TalonSRX(9);
+  private final WPI_TalonSRX winchController = new WPI_TalonSRX(0);
 
   private Solenoid leftIntakeSolenoid = new Solenoid(0);
   private Solenoid rightIntakeSolenoid = new Solenoid(1);
@@ -81,17 +84,29 @@ public class Robot extends TimedRobot {
   }
   private AutonomousState autonState = AutonomousState.START;
 
+  private enum TurnRightState {
+    START, TURN, STOP
+  }
+
+  private TurnRightState turnRight = TurnRightState.START;
+
   private Timer autoTimer = new Timer();
   private Timer turnTimer = new Timer();
+  private double turnCounter = 0;
 
   private int red1 = 1;
-  private int red2 = 2;
+  private int red2 = 2; //use for turning function
   private int red3 = 3;
   private int red4 = 4;
-  private int green3 = 5;
+  private int green2 = 5;
   private int blue3 = 6;
   private int blue2 = 7;
-  private int green2 = 8;
+  private int green3 = 8;
+
+  private double tX = 0;
+  private double tY = 0;
+  private final int XRES = 320;
+  private final int YRES = 240;
   
   /**
    * This function is run when the robot is first started up and should be used
@@ -141,11 +156,18 @@ public class Robot extends TimedRobot {
     Number piGreen = ntinst.getTable("Vision").getEntry("numContours").getNumber(0);
     Number tHeight = ntinst.getTable("Vision").getEntry("target height").getNumber(0);
     Number tWidth = ntinst.getTable("Vision").getEntry("target width").getNumber(0);
+    tX = ntinst.getTable("Vision").getEntry("target x position").getDouble(0); // the position of the center of the target
+    tY = ntinst.getTable("Vision").getEntry("target y position").getDouble(0);
 
     SmartDashboard.putString("Pi Status", piStatus);
     SmartDashboard.putNumber("Num Green", (double) piGreen);
     SmartDashboard.putNumber("target height", (double) tHeight);
     SmartDashboard.putNumber("target width", (double) tWidth);
+    SmartDashboard.putNumber("target x position", (double) tX);
+    SmartDashboard.putNumber("target y position", (double) tY);
+
+    SmartDashboard.putNumber("target x test", (double) tX);
+    SmartDashboard.putNumber("target y test", (double) tY);
     printRPMs();
   }
 
@@ -198,15 +220,9 @@ public class Robot extends TimedRobot {
       if (autoTimer.get() < 0.1) {
         break; // intentional don't do anything
       } else if(waitMove()){
-        leftTankMotor2Controller.set(0.2); //proportional control? error*constant
-        rightTankMotor1Controller.set(-0.2);
-        leftTankMotor1Controller.set(ControlMode.Follower, 4);
-        rightTankMotor2Controller.set(ControlMode.Follower,1);
+        setAll(0.2);
       }else{
-        leftTankMotor2Controller.set(0);
-        rightTankMotor1Controller.set(0);
-        leftTankMotor1Controller.set(ControlMode.Follower, 4);
-        rightTankMotor2Controller.set(ControlMode.Follower,1);
+        setAll(0);
         autoTimer.reset();
         autoTimer.start();
         autonState = AutonomousState.SHOOT;
@@ -231,10 +247,7 @@ public class Robot extends TimedRobot {
       leftTankMotor1Controller.set(0.12);
       leftTankMotor2Controller.set(0.12);
     }else{
-      rightTankMotor1Controller.set(0);
-      rightTankMotor2Controller.set(0);
-      leftTankMotor1Controller.set(0.0);
-      leftTankMotor2Controller.set(0.0);
+      setAll(0.0);
     }
     
     default:
@@ -251,10 +264,13 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
-    tankDrive();
+    if(!buttonBoard.getRawButton(red2)){
+      tankDrive();
+    }
     intake();
     shoot();
     reset();
+    turnR();
   }
 
   /**
@@ -327,11 +343,34 @@ public class Robot extends TimedRobot {
     leftIntakeSolenoid.set(buttonBoard.getRawButton(red1));
     rightIntakeSolenoid.set(buttonBoard.getRawButton(red1));
   }
-  public void magOut()
+
+  public void setAll(double power)
   {
-    if(buttonBoard.getRawButton(red2))
-      magazineMiddleController.set(-0.5);
+    leftTankMotor2Controller.set(power);
+    rightTankMotor1Controller.set(power* -1);
+    leftTankMotor1Controller.set(ControlMode.Follower, 4);
+    rightTankMotor2Controller.set(ControlMode.Follower,1);
   }
+
+  public void aim() //320 by 240
+  {
+    if (buttonBoard.getRawButton(green2))
+    {
+      if (tX < XRES/2-5)
+      {
+        RightAll(0.1);
+      }
+      else if (tX > XRES/2+5)
+      {
+        RightAll(-0.1);
+      }
+      else
+      {
+        setAll(0.0);
+      }
+    }
+  }
+
   //The following methods are not used in game
   public void reset()
   {
@@ -340,5 +379,77 @@ public class Robot extends TimedRobot {
       rightTankMotor1Controller.setSelectedSensorPosition(0);
       leftTankMotor2Controller.setSelectedSensorPosition(0);
     }
+  }
+
+  public void turnR()
+  {
+    if(buttonBoard.getRawButton(red2))
+    {
+      if(turnRight == TurnRightState.START)
+      {
+        turnCounter = 0;
+        setAll(0.0);
+        turnTimer.reset();
+        turnTimer.start();
+        if (turnTimer.get() >= 1.0)
+        {
+          turnTimer.stop();
+          turnTimer.reset();
+          turnRight = TurnRightState.TURN;
+        }
+      }
+      else if(turnRight == TurnRightState.TURN)
+      {
+        if(turnCounter < 0.5)
+        {
+          //rightTankMotor1Controller.setSelectedSensorPosition(0);
+          //int encoderGoal = 1000;
+          //int encoderCurrent = rightTankMotor1Controller.getSelectedSensorPosition();
+          //double constant = 0.2
+          //double power = constant*(encoderGoal - encoderCurrent);
+          rightTankMotor1Controller.set(turnCounter);
+          rightTankMotor2Controller.set(turnCounter);
+          leftTankMotor1Controller.set(turnCounter);
+          leftTankMotor2Controller.set(turnCounter);
+          turnCounter += 0.01;
+        }
+        if(turnCounter >= 0.5)
+        {
+          rightTankMotor1Controller.set(turnCounter);
+          rightTankMotor2Controller.set(turnCounter);
+          leftTankMotor1Controller.set(turnCounter);
+          leftTankMotor2Controller.set(turnCounter);
+          turnCounter -= 0.01;
+          if (turnCounter <= 0) {
+            setAll(0.0);
+            turnRight = TurnRightState.STOP;
+          }
+        }
+      }
+      else if (turnRight == TurnRightState.STOP)
+      {
+        turnTimer.start();
+        if (turnTimer.get() >= 2.0)
+        {
+          turnRight = TurnRightState.START;
+          turnTimer.stop();
+          turnTimer.reset();
+        }
+      }
+    } 
+    else
+    {
+      turnRight = TurnRightState.START;
+      turnTimer.stop();
+      turnTimer.reset();
+      
+    }
+  }
+  public void RightAll(double power)
+  {
+    leftTankMotor2Controller.set(power);
+    rightTankMotor1Controller.set(power);
+    leftTankMotor1Controller.set(ControlMode.Follower, 4);
+    rightTankMotor2Controller.set(ControlMode.Follower,1);
   }
 }
