@@ -395,11 +395,14 @@ public class Robot extends TimedRobot {
         {
           turnTimer.stop();
           turnTimer.reset();
+          turnTimer.start();
           turnRight = TurnRightState.TURN;
         }
       }
       else if(turnRight == TurnRightState.TURN)
       {
+        
+        /*
         if(turnCounter < 0.5)
         {
           //rightTankMotor1Controller.setSelectedSensorPosition(0);
@@ -424,6 +427,11 @@ public class Robot extends TimedRobot {
             setAll(0.0);
             turnRight = TurnRightState.STOP;
           }
+        }*/
+        setAll(0.5);
+        if(turnTimer.get() >= 2) {
+          setAll(0);
+          turnRight = TurnRightState.STOP;
         }
       }
       else if (turnRight == TurnRightState.STOP)
@@ -436,6 +444,8 @@ public class Robot extends TimedRobot {
           turnTimer.reset();
         }
       }
+    
+    
     } 
     else
     {
