@@ -1,0 +1,44 @@
+<xml version="1.0">
+<dashboard>
+	<widget field="Num Green" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.ProgressBar">
+		<location x="22" y="685"/>
+		<height>176</height>
+		<property name="Foreground" value="0.255.51.255"/>
+	</widget>
+	<widget field="target y test" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="0" y="614"/>
+	</widget>
+	<widget field="target x test" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="0" y="593"/>
+	</widget>
+	<widget field="target y position" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="0" y="572"/>
+	</widget>
+	<widget field="target x position" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="0" y="551"/>
+	</widget>
+	<widget field="target width" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="162" y="530"/>
+	</widget>
+	<widget field="target height" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="158" y="508"/>
+	</widget>
+	<static-widget class="edu.wpi.first.smartdashboard.gui.elements.streaming.FFmpegStreamViewer">
+		<location x="0" y="94"/>
+		<width>530</width>
+		<height>396</height>
+		<property name="Server URL" value="http://wpilibpi.local:1181/stream.mjpg"/>
+	</static-widget>
+	<widget field="Pi Status" type="String" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="6" y="527"/>
+	</widget>
+	<widget field="Auto Selector" type="String" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="0" y="0"/>
+	</widget>
+	<widget field="Auto choices" type="String Chooser" class="edu.wpi.first.smartdashboard.gui.elements.Chooser">
+		<location x="4" y="24"/>
+	</widget>
+</dashboard>
+<live-window>
+</live-window>
+</xml>
