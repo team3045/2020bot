@@ -1,5 +1,11 @@
 <xml version="1.0">
 <dashboard>
+	<static-widget class="edu.wpi.first.smartdashboard.gui.elements.streaming.FFmpegStreamViewer">
+		<location x="665" y="50"/>
+		<width>1173</width>
+		<height>784</height>
+		<property name="Server URL" value="http://10.30.45.11:1182/stream.mjpg"/>
+	</static-widget>
 	<widget field="Num Green" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.ProgressBar">
 		<location x="22" y="685"/>
 		<height>176</height>
@@ -27,7 +33,7 @@
 		<location x="0" y="94"/>
 		<width>530</width>
 		<height>396</height>
-		<property name="Server URL" value="http://wpilibpi.local:1181/stream.mjpg"/>
+		<property name="Server URL" value="http://10.30.45.11:1181/stream.mjpg"/>
 	</static-widget>
 	<widget field="Pi Status" type="String" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
 		<location x="6" y="527"/>
