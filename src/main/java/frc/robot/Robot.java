@@ -414,11 +414,8 @@ public class Robot extends TimedRobot {
     }
   }
   public void intakeTHINGY() {
-    if (buttonBoard.getRawButton(green3)) {
-      intakeTHING.set(0.5);
-    } else {
-      intakeTHING.set(0);
-    }
+    double thingAxis = buttonBoard.getRawAxis(vertical);
+    intakeTHING.set(thingAxis * 0.5);
   }
 
   public void turnR() {
