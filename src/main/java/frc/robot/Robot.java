@@ -292,6 +292,7 @@ public class Robot extends TimedRobot {
       tankDrive();
     }
     intake();
+    intakeTHINGY();
     shoot();
     reset();
     intakeArms();
