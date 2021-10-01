@@ -65,15 +65,17 @@ public class Robot extends TimedRobot {
   private final WPI_TalonSRX shooterLeftSide = new WPI_TalonSRX(7);
   private final WPI_TalonSRX shooterRightSide = new WPI_TalonSRX(8);
   private final WPI_TalonSRX intakeTHING = new WPI_TalonSRX(9);
-  private final WPI_TalonSRX winchController = new WPI_TalonSRX(0);
+  boolean enabled = true;
+  //private final WPI_TalonSRX winchController = new WPI_TalonSRX(0);
 
-  public Compressor compressor = new Compressor(0);
+  /*public Compressor compressor = new Compressor(0);
+
 
   //compressor.setClosedLoopControl(true);
   
   boolean enabled = compressor.enabled();
   boolean pressureSwitch = compressor.getPressureSwitchValue();
-  double current = compressor.getCompressorCurrent();
+  double current = compressor.getCompressorCurrent();*/
 
   private Solenoid leftIntakeSolenoid = new Solenoid(0);
   private Solenoid rightIntakeSolenoid = new Solenoid(1);
@@ -139,6 +141,7 @@ public class Robot extends TimedRobot {
     rightTankMotor1Controller.setSelectedSensorPosition(0);
     leftTankMotor2Controller.setSelectedSensorPosition(0);
     SmartDashboard.putNumber("ON TARGET", 0);
+    SmartDashboard.putString("state", "ERROR");
   }
 
   /**
@@ -415,7 +418,7 @@ public class Robot extends TimedRobot {
   }
   public void intakeTHINGY() {
     double thingAxis = buttonBoard.getRawAxis(vertical);
-    intakeTHING.set(thingAxis * 0.5);
+    intakeTHING.set(thingAxis * 0.8);
   }
 
   public void turnR() {
