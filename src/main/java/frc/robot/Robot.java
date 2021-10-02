@@ -248,32 +248,29 @@ public class Robot extends TimedRobot {
       } else if (autonState == AutonomousState.MOVE_FORWARD) {
         if (autoTimer.get() < 0.1) {
           break; // intentional don't do anything
-        } else if (waitMove()) {
-          setAll(0.2);
-        } else {
+        } else if (autoTimer.get() >= 0.11 && autoTimer.get() <= 3) {
+          setAll(0.5);
+        } else if (autoTimer.get() >= 3){
           setAll(0);
           autoTimer.reset();
           autoTimer.start();
           autonState = AutonomousState.SHOOT;
         }
       } else if (autonState == AutonomousState.SHOOT) {
-        shooterLeftSide.set(0.5);
-        shooterRightSide.set(-0.5);
+        /*shooterLeftSide.set(1.0);
+        shooterRightSide.set(-1.0);*/
         if (autoTimer.get() >= 1.5) {
           autonState = AutonomousState.MAG;
           autoTimer.stop();
         }
       } else if (autonState == AutonomousState.MAG) {
-        magazineMiddleController.set(0.2);
+        //magazineMiddleController.set(0.2);
       }
 
       break;
     case kDefaultAuto:
       if (turnTimer.get() <= 2.1) {
-        rightTankMotor1Controller.set(0.12);
-        rightTankMotor2Controller.set(0.12);
-        leftTankMotor1Controller.set(0.12);
-        leftTankMotor2Controller.set(0.12);
+        setAll(0.6);
       } else {
         setAll(0.0);
       }
