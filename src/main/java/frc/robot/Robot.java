@@ -65,13 +65,12 @@ public class Robot extends TimedRobot {
   private final WPI_TalonSRX shooterLeftSide = new WPI_TalonSRX(7);
   private final WPI_TalonSRX shooterRightSide = new WPI_TalonSRX(8);
   private final WPI_TalonSRX intakeTHING = new WPI_TalonSRX(9);
-    //private final WPI_TalonSRX winchController = new WPI_TalonSRX(0);
+  // private final WPI_TalonSRX winchController = new WPI_TalonSRX(0);
 
   public Compressor compressor = new Compressor(0);
 
+  // compressor.setClosedLoopControl(true);
 
-  //compressor.setClosedLoopControl(true);
-  
   boolean enabled = compressor.enabled();
   boolean pressureSwitch = compressor.getPressureSwitchValue();
   double current = compressor.getCompressorCurrent();
@@ -147,7 +146,7 @@ public class Robot extends TimedRobot {
    * This function is called every robot packet, no matter the mode. Use this for
    * items like diagnostics that you want ran during disabled, autonomous,
    * teleoperated and test.
-   *
+   * 
    * <p>
    * This runs after the mode specific periodic functions, but before LiveWindow
    * and SmartDashboard integrated updating.
@@ -159,7 +158,8 @@ public class Robot extends TimedRobot {
     Number piGreen = ntinst.getTable("Vision").getEntry("numContours").getNumber(0);
     Number tHeight = ntinst.getTable("Vision").getEntry("target height").getNumber(0);
     Number tWidth = ntinst.getTable("Vision").getEntry("target width").getNumber(0);
-    tX = ntinst.getTable("Vision").getEntry("target x position").getDouble(0); // the position of the center of the                                                          // target
+    tX = ntinst.getTable("Vision").getEntry("target x position").getDouble(0); // the position of the center of the //
+                                                                               // target
     tY = ntinst.getTable("Vision").getEntry("target y position").getDouble(0);
 
     SmartDashboard.putString("Pi Status", piStatus);
@@ -172,28 +172,27 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("target x test", (double) tX);
     SmartDashboard.putNumber("target y test", (double) tY);
 
-    SmartDashboard.putNumber("angle off target", Math.abs(tX - XRES/2));
+    SmartDashboard.putNumber("angle off target", Math.abs(tX - XRES / 2));
 
-    if(enabled){
+    if (enabled) {
       SmartDashboard.putString("Compressor Staus", "ON");
-    }else{
+    } else {
       SmartDashboard.putString("Compressor Staus", "OFF");
     }
 
-
-    if(buttonBoard.getRawButton(green3)){
+    if (buttonBoard.getRawButton(green3)) {
       SmartDashboard.putString("PRESSED? Green3 ", "TRUE");
-    }else{
+    } else {
       SmartDashboard.putString("PRESSED? Green3 ", "FALSE");
     }
-    if(buttonBoard.getRawButton(red1)){
+    if (buttonBoard.getRawButton(red1)) {
       SmartDashboard.putString("PRESSED? Red1 ", "TRUE");
-    }else{
+    } else {
       SmartDashboard.putString("PRESSED? Red1 ", "FALSE");
     }
-    if(buttonBoard.getRawButton(red2)){
-        SmartDashboard.putString("PRESSED? Red2 ", "TRUE");
-    }else{
+    if (buttonBoard.getRawButton(red2)) {
+      SmartDashboard.putString("PRESSED? Red2 ", "TRUE");
+    } else {
       SmartDashboard.putString("PRESSED? Red2 ", "FALSE");
     }
 
@@ -227,6 +226,7 @@ public class Robot extends TimedRobot {
       leftTankMotor2Controller.setSelectedSensorPosition(0);
       break;
     case kDefaultAuto:
+      turnTimer.stop();
       turnTimer.reset();
       turnTimer.start();
       rightTankMotor1Controller.setSelectedSensorPosition(0);
@@ -248,36 +248,43 @@ public class Robot extends TimedRobot {
       } else if (autonState == AutonomousState.MOVE_FORWARD) {
         if (autoTimer.get() < 0.1) {
           break; // intentional don't do anything
-        } else if (autoTimer.get() >= 0.11 && autoTimer.get() <= 3) {
-          setAll(0.5);
-        } else if (autoTimer.get() >= 3){
+        } else if (autoTimer.get() >= 0.11 && autoTimer.get() <= 4) {
+          setAll(0.8);
+        } else if (autoTimer.get() > 4) {
           setAll(0);
           autoTimer.reset();
           autoTimer.start();
           autonState = AutonomousState.SHOOT;
         }
       } else if (autonState == AutonomousState.SHOOT) {
-        /*shooterLeftSide.set(1.0);
-        shooterRightSide.set(-1.0);*/
+        /*
+         * shooterLeftSide.set(1.0); shooterRightSide.set(-1.0);
+         */
         if (autoTimer.get() >= 1.5) {
           autonState = AutonomousState.MAG;
           autoTimer.stop();
         }
       } else if (autonState == AutonomousState.MAG) {
-        //magazineMiddleController.set(0.2);
+        // magazineMiddleController.set(0.2);
+        autoTimer.reset();
       }
 
       break;
     case kDefaultAuto:
-      if (turnTimer.get() <= 2.1) {
-        setAll(0.6);
+      if (turnTimer.get() <= 4.0) {
+        setAll(0.8);
       } else {
         setAll(0.0);
       }
 
     default:
+      if (turnTimer.get() <= 4.0) {
+        setAll(0.8);
+      } else {
+        setAll(0.0);
+      }
       // Put default auto code here
-      break;
+      // break;
     }
 
   }
@@ -287,15 +294,13 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
-    if(true || !buttonBoard.getRawButton(green3)){
-      tankDrive();
-    }
+    tankDrive();
     intake();
     intakeTHINGY();
     shoot();
     reset();
     intakeArms();
-    //turnR();
+    // turnR();
   }
 
   /**
@@ -311,7 +316,7 @@ public class Robot extends TimedRobot {
   }
 
   public void tankDrive() {
-    final double percentOutput = 0.4;
+    final double percentOutput = 0.7;
 
     final double leftPower = leftJoystick.getRawAxis(vertical);
     final double rightPower = rightJoystick.getRawAxis(vertical);
@@ -339,28 +344,34 @@ public class Robot extends TimedRobot {
   public void printRPMs() {
     if (count++ % 20 == 0) {
       /*
-      System.err.println("Right side = " + rightTankMotor1Controller.getSelectedSensorVelocity() + " RPM");
-      System.err.println("Right side position = " + rightTankMotor1Controller.getSelectedSensorPosition());
-      System.err.println("Right side talon %age: " + rightTankMotor1Controller.get());
-      System.err.println("Right side talon current: " + rightTankMotor1Controller.getSupplyCurrent() + "A");
-      System.err.println("Left side = " + leftTankMotor2Controller.getSelectedSensorVelocity() + " RPM");
-      System.err.println("Left side position = " + leftTankMotor2Controller.getSelectedSensorPosition());
-      System.err.println("Left side talon %age: " + leftTankMotor2Controller.get());
-      System.err.println("Left side talon current: " + leftTankMotor2Controller.getSupplyCurrent() + "A");
-      */
-      }
-      count = 1;
+       * System.err.println("Right side = " +
+       * rightTankMotor1Controller.getSelectedSensorVelocity() + " RPM");
+       * System.err.println("Right side position = " +
+       * rightTankMotor1Controller.getSelectedSensorPosition());
+       * System.err.println("Right side talon %age: " +
+       * rightTankMotor1Controller.get());
+       * System.err.println("Right side talon current: " +
+       * rightTankMotor1Controller.getSupplyCurrent() + "A");
+       * System.err.println("Left side = " +
+       * leftTankMotor2Controller.getSelectedSensorVelocity() + " RPM");
+       * System.err.println("Left side position = " +
+       * leftTankMotor2Controller.getSelectedSensorPosition());
+       * System.err.println("Left side talon %age: " +
+       * leftTankMotor2Controller.get());
+       * System.err.println("Left side talon current: " +
+       * leftTankMotor2Controller.getSupplyCurrent() + "A");
+       */
+    }
+    count = 1;
   }
-  
-// aq23.
 
   public void shoot() {
     if (buttonBoard.getRawButton(blue3)) {
-      shooterLeftSide.set(0.8);
-      shooterRightSide.set(-0.8);
+      shooterLeftSide.set(1.0);
+      shooterRightSide.set(-1.0);
     } else if (buttonBoard.getRawButton(blue2)) {
-      shooterLeftSide.set(-1.0);
-      shooterRightSide.set(1.0);
+      shooterLeftSide.set(-0.7);
+      shooterRightSide.set(0.7);
     } else {
       shooterLeftSide.set(0.0);
       shooterRightSide.set(0.0);
@@ -413,6 +424,7 @@ public class Robot extends TimedRobot {
       leftTankMotor2Controller.setSelectedSensorPosition(0);
     }
   }
+
   public void intakeTHINGY() {
     double thingAxis = buttonBoard.getRawAxis(vertical);
     intakeTHING.set(thingAxis * 0.8);
