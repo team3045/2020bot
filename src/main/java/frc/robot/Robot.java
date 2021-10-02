@@ -65,17 +65,16 @@ public class Robot extends TimedRobot {
   private final WPI_TalonSRX shooterLeftSide = new WPI_TalonSRX(7);
   private final WPI_TalonSRX shooterRightSide = new WPI_TalonSRX(8);
   private final WPI_TalonSRX intakeTHING = new WPI_TalonSRX(9);
-  boolean enabled = true;
-  //private final WPI_TalonSRX winchController = new WPI_TalonSRX(0);
+    //private final WPI_TalonSRX winchController = new WPI_TalonSRX(0);
 
-  /*public Compressor compressor = new Compressor(0);
+  public Compressor compressor = new Compressor(0);
 
 
   //compressor.setClosedLoopControl(true);
   
   boolean enabled = compressor.enabled();
   boolean pressureSwitch = compressor.getPressureSwitchValue();
-  double current = compressor.getCompressorCurrent();*/
+  double current = compressor.getCompressorCurrent();
 
   private Solenoid leftIntakeSolenoid = new Solenoid(0);
   private Solenoid rightIntakeSolenoid = new Solenoid(1);
@@ -98,8 +97,8 @@ public class Robot extends TimedRobot {
 
   private int red1 = 1;
   private int red2 = 2; // use for turning function
-  private int red3 = 3;
-  private int red4 = 4;
+  private int red3 = 4;
+  private int red4 = 3;
   private int green2 = 5;
   private int blue3 = 6;
   private int blue2 = 7;
@@ -291,7 +290,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
-    if(!buttonBoard.getRawButton(green3)){
+    if(true || !buttonBoard.getRawButton(green3)){
       tankDrive();
     }
     intake();
@@ -299,7 +298,7 @@ public class Robot extends TimedRobot {
     shoot();
     reset();
     intakeArms();
-    turnR();
+    //turnR();
   }
 
   /**
@@ -356,14 +355,15 @@ public class Robot extends TimedRobot {
       count = 1;
   }
   
+// aq23.
 
   public void shoot() {
     if (buttonBoard.getRawButton(blue3)) {
-      shooterLeftSide.set(0.5);
-      shooterRightSide.set(-0.5);
+      shooterLeftSide.set(0.8);
+      shooterRightSide.set(-0.8);
     } else if (buttonBoard.getRawButton(blue2)) {
-      shooterLeftSide.set(-0.8);
-      shooterRightSide.set(0.8);
+      shooterLeftSide.set(-1.0);
+      shooterRightSide.set(1.0);
     } else {
       shooterLeftSide.set(0.0);
       shooterRightSide.set(0.0);
@@ -373,10 +373,10 @@ public class Robot extends TimedRobot {
   public void intakeArms() {
     if (buttonBoard.getRawButton(red1) && buttonBoard.getRawButton(red2)) {
       // NOTHING
-    } else if (buttonBoard.getRawButton(red1) && enabled == true) {
+    } else if (buttonBoard.getRawButton(red1)) {
       leftIntakeSolenoid.set(false);
       rightIntakeSolenoid.set(false);
-    } else if (buttonBoard.getRawButton(red2) && enabled == true) {
+    } else if (buttonBoard.getRawButton(red2)) {
       leftIntakeSolenoid.set(true);
       rightIntakeSolenoid.set(true);
     } else {
