@@ -244,15 +244,16 @@ public class Robot extends TimedRobot {
           autonState = AutonomousState.SHOOT;
         }
       } else if (autonState == AutonomousState.SHOOT) {
-        /*
-         * shooterLeftSide.set(1.0); shooterRightSide.set(-1.0);
-         */
+
+        shooterLeftSide.set(1.0 * shootTHING);
+        shooterRightSide.set(-1.0 * shootTHING);
+
         if (autoTimer.get() >= 1.5) {
           autonState = AutonomousState.MAG;
           autoTimer.stop();
         }
       } else if (autonState == AutonomousState.MAG) {
-        magazineMiddleController.set(0.2);
+        magazineMiddleController.set(0.5);
         autoTimer.reset();
       }
 
@@ -332,10 +333,10 @@ public class Robot extends TimedRobot {
   public void increaseThing() {
 
     if (buttonBoard.getRawButton(green2) && shootTHING > 0.0) {
-      //shootTHING -= 0.1;
+      // shootTHING -= 0.1;
       SmartDashboard.putNumber("Shoot power", shootTHING);
     } else if (buttonBoard.getRawButton(green3) && shootTHING < 1.0) {
-      //shootTHING += 0.1;
+      // shootTHING += 0.1;
       SmartDashboard.putNumber("Shoot power", shootTHING);
     }
   }
