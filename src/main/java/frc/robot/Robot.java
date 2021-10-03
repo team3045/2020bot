@@ -40,7 +40,7 @@ public class Robot extends TimedRobot {
   private final Joystick leftJoystick = new Joystick(0);
   private final Joystick rightJoystick = new Joystick(1);
   private final Joystick buttonBoard = new Joystick(2);
-  private double shootTHING = 0.7;
+  private double shootTHING = 0.5;
   /*
    * @Override public boolean get() { // TODO Auto-generated method stub return
    * false; }
@@ -67,13 +67,13 @@ public class Robot extends TimedRobot {
   private final WPI_TalonSRX intakeTHING = new WPI_TalonSRX(9);
   // private final WPI_TalonSRX winchController = new WPI_TalonSRX(0);
 
-  /*public Compressor compressor = new Compressor(0);
+  public Compressor compressor = new Compressor(0);
 
   // compressor.setClosedLoopControl(true);
 
   boolean enabled = compressor.enabled();
   boolean pressureSwitch = compressor.getPressureSwitchValue();
-  double current = compressor.getCompressorCurrent();*/
+  double current = compressor.getCompressorCurrent();
 
   private Solenoid leftIntakeSolenoid = new Solenoid(0);
   private Solenoid rightIntakeSolenoid = new Solenoid(1);
@@ -91,6 +91,7 @@ public class Robot extends TimedRobot {
   private TurnRightState turnRight = TurnRightState.START;
 
   private Timer autoTimer = new Timer();
+  private Timer increaseTimer = new Timer();
   private Timer turnTimer = new Timer();
   private double turnCounter = 0;
 
@@ -173,28 +174,14 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("target y test", (double) tY);
 
     SmartDashboard.putNumber("angle off target", Math.abs(tX - XRES / 2));
-/*
+
     if (enabled) {
       SmartDashboard.putString("Compressor Staus", "ON");
     } else {
       SmartDashboard.putString("Compressor Staus", "OFF");
-    }*/
+    }
 
-    if (buttonBoard.getRawButton(green3)) {
-      SmartDashboard.putString("PRESSED? Green3 ", "TRUE");
-    } else {
-      SmartDashboard.putString("PRESSED? Green3 ", "FALSE");
-    }
-    if (buttonBoard.getRawButton(red1)) {
-      SmartDashboard.putString("PRESSED? Red1 ", "TRUE");
-    } else {
-      SmartDashboard.putString("PRESSED? Red1 ", "FALSE");
-    }
-    if (buttonBoard.getRawButton(red2)) {
-      SmartDashboard.putString("PRESSED? Red2 ", "TRUE");
-    } else {
-      SmartDashboard.putString("PRESSED? Red2 ", "FALSE");
-    }
+    SmartDashboard.putNumber("Shoot power", shootTHING);
 
     printRPMs();
   }
@@ -249,7 +236,7 @@ public class Robot extends TimedRobot {
         if (autoTimer.get() < 0.1) {
           break; // intentional don't do anything
         } else if (autoTimer.get() >= 0.11 && autoTimer.get() <= 4) {
-          setAll(0.8);
+          setAll(-0.8);
         } else if (autoTimer.get() > 4) {
           setAll(0);
           autoTimer.reset();
@@ -343,6 +330,7 @@ public class Robot extends TimedRobot {
   }
 
   public void increaseThing() {
+
     if (buttonBoard.getRawButton(green2) && shootTHING > 0.0) {
       //shootTHING -= 0.1;
       SmartDashboard.putNumber("Shoot power", shootTHING);
