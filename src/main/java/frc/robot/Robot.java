@@ -40,7 +40,7 @@ public class Robot extends TimedRobot {
   private final Joystick leftJoystick = new Joystick(0);
   private final Joystick rightJoystick = new Joystick(1);
   private final Joystick buttonBoard = new Joystick(2);
-
+  private double shootTHING = 0.7;
   /*
    * @Override public boolean get() { // TODO Auto-generated method stub return
    * false; }
@@ -67,13 +67,13 @@ public class Robot extends TimedRobot {
   private final WPI_TalonSRX intakeTHING = new WPI_TalonSRX(9);
   // private final WPI_TalonSRX winchController = new WPI_TalonSRX(0);
 
-  public Compressor compressor = new Compressor(0);
+  /*public Compressor compressor = new Compressor(0);
 
   // compressor.setClosedLoopControl(true);
 
   boolean enabled = compressor.enabled();
   boolean pressureSwitch = compressor.getPressureSwitchValue();
-  double current = compressor.getCompressorCurrent();
+  double current = compressor.getCompressorCurrent();*/
 
   private Solenoid leftIntakeSolenoid = new Solenoid(0);
   private Solenoid rightIntakeSolenoid = new Solenoid(1);
@@ -173,12 +173,12 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("target y test", (double) tY);
 
     SmartDashboard.putNumber("angle off target", Math.abs(tX - XRES / 2));
-
+/*
     if (enabled) {
       SmartDashboard.putString("Compressor Staus", "ON");
     } else {
       SmartDashboard.putString("Compressor Staus", "OFF");
-    }
+    }*/
 
     if (buttonBoard.getRawButton(green3)) {
       SmartDashboard.putString("PRESSED? Green3 ", "TRUE");
@@ -265,7 +265,7 @@ public class Robot extends TimedRobot {
           autoTimer.stop();
         }
       } else if (autonState == AutonomousState.MAG) {
-        // magazineMiddleController.set(0.2);
+        magazineMiddleController.set(0.2);
         autoTimer.reset();
       }
 
@@ -300,6 +300,7 @@ public class Robot extends TimedRobot {
     shoot();
     reset();
     intakeArms();
+    increaseThing();
     // turnR();
   }
 
@@ -316,7 +317,7 @@ public class Robot extends TimedRobot {
   }
 
   public void tankDrive() {
-    final double percentOutput = 0.7;
+    final double percentOutput = 0.5;
 
     final double leftPower = leftJoystick.getRawAxis(vertical);
     final double rightPower = rightJoystick.getRawAxis(vertical);
@@ -331,13 +332,23 @@ public class Robot extends TimedRobot {
   public void intake() {
     if (buttonBoard.getRawButton(red3)) {
       intakeAxelController.set(0.5);
-      magazineMiddleController.set(0.7);
+      magazineMiddleController.set(1.0);
     } else if (buttonBoard.getRawButton(red4)) {
       intakeAxelController.set(-0.5);
-      magazineMiddleController.set(-0.7);
+      magazineMiddleController.set(-1.0);
     } else {
       intakeAxelController.set(0.0);
       magazineMiddleController.set(0.0);
+    }
+  }
+
+  public void increaseThing() {
+    if (buttonBoard.getRawButton(green2) && shootTHING > 0.0) {
+      //shootTHING -= 0.1;
+      SmartDashboard.putNumber("Shoot power", shootTHING);
+    } else if (buttonBoard.getRawButton(green3) && shootTHING < 1.0) {
+      //shootTHING += 0.1;
+      SmartDashboard.putNumber("Shoot power", shootTHING);
     }
   }
 
@@ -367,11 +378,11 @@ public class Robot extends TimedRobot {
 
   public void shoot() {
     if (buttonBoard.getRawButton(blue3)) {
-      shooterLeftSide.set(1.0);
-      shooterRightSide.set(-1.0);
+      shooterLeftSide.set(1.0 * shootTHING);
+      shooterRightSide.set(-1.0 * shootTHING);
     } else if (buttonBoard.getRawButton(blue2)) {
-      shooterLeftSide.set(-0.7);
-      shooterRightSide.set(0.7);
+      shooterLeftSide.set(-1.0 * shootTHING);
+      shooterRightSide.set(1.0 * shootTHING);
     } else {
       shooterLeftSide.set(0.0);
       shooterRightSide.set(0.0);
@@ -390,8 +401,6 @@ public class Robot extends TimedRobot {
     } else {
       // NOTHING
     }
-    // leftIntakeSolenoid.set(buttonBoard.getRawButton(red1));
-    // rightIntakeSolenoid.set(buttonBoard.getRawButton(red1));
   }
 
   public void setAll(double power) {
@@ -427,86 +436,58 @@ public class Robot extends TimedRobot {
 
   public void intakeTHINGY() {
     double thingAxis = buttonBoard.getRawAxis(vertical);
-    intakeTHING.set(thingAxis * 0.8);
+    intakeTHING.set(thingAxis);
   }
-
-  public void turnR() {
-    if (buttonBoard.getRawButton(green3)) {
-      SmartDashboard.putString("state", turnRight.toString());
-      if (turnRight == TurnRightState.START) {
-        SmartDashboard.putString("state", turnRight.toString());
-        turnCounter = 0;
-        setAll(0.0);
-        turnTimer.reset();
-        turnTimer.start();
-        if (turnTimer.get() >= 1.0) {
-          turnTimer.stop();
-          turnTimer.reset();
-          turnTimer.start();
-          turnRight = TurnRightState.TURN;
-          SmartDashboard.putString("state", turnRight.toString());
-        }
-
-        if (turnRight == TurnRightState.TURN) {
-          SmartDashboard.putString("state", turnRight.toString());
-          setAll(0.5);
-          if (turnTimer.get() >= 2) {
-            setAll(0);
-            turnRight = TurnRightState.STOP;
-            SmartDashboard.putString("state", turnRight.toString());
-          }
-        }
-        if (turnRight == TurnRightState.STOP) {
-          setAll(0);
-          turnTimer.stop();
-          turnTimer.reset();
-          SmartDashboard.putString("state", turnRight.toString());
-          turnTimer.start();
-          if (turnTimer.get() >= 2.0) {
-            turnRight = TurnRightState.START;
-            SmartDashboard.putString("state", turnRight.toString());
-            turnTimer.stop();
-            turnTimer.reset();
-          }
-        }
-      }
-      // else if(turnRight == TurnRightState.TURN)
-      // {
-
-      /*
-       * if(turnCounter < 0.5) {
-       * //rightTankMotor1Controller.setSelectedSensorPosition(0); //int encoderGoal =
-       * 1000; //int encoderCurrent =
-       * rightTankMotor1Controller.getSelectedSensorPosition(); //double constant =
-       * 0.2 //double power = constant*(encoderGoal - encoderCurrent);
-       * rightTankMotor1Controller.set(turnCounter);
-       * rightTankMotor2Controller.set(turnCounter);
-       * leftTankMotor1Controller.set(turnCounter);
-       * leftTankMotor2Controller.set(turnCounter); turnCounter += 0.01; }
-       * if(turnCounter >= 0.5) { rightTankMotor1Controller.set(turnCounter);
-       * rightTankMotor2Controller.set(turnCounter);
-       * leftTankMotor1Controller.set(turnCounter);
-       * leftTankMotor2Controller.set(turnCounter); turnCounter -= 0.01; if
-       * (turnCounter <= 0) { setAll(0.0); turnRight = TurnRightState.STOP; } }
-       */
-      /*
-       * setAll(0.5); if(turnTimer.get() >= 2) { setAll(0); turnRight =
-       * TurnRightState.STOP; }
-       */
-      // }
-      /*
-       * else if (turnRight == TurnRightState.STOP) { turnTimer.start(); if
-       * (turnTimer.get() >= 2.0) { turnRight = TurnRightState.START;
-       * turnTimer.stop(); turnTimer.reset(); } }
-       */
-
-    } else {
-      turnRight = TurnRightState.START;
-      turnTimer.stop();
-      turnTimer.reset();
-
-    }
-  }
+  /*
+   * public void turnR() { if (buttonBoard.getRawButton(green3)) {
+   * SmartDashboard.putString("state", turnRight.toString()); if (turnRight ==
+   * TurnRightState.START) { SmartDashboard.putString("state",
+   * turnRight.toString()); turnCounter = 0; setAll(0.0); turnTimer.reset();
+   * turnTimer.start(); if (turnTimer.get() >= 1.0) { turnTimer.stop();
+   * turnTimer.reset(); turnTimer.start(); turnRight = TurnRightState.TURN;
+   * SmartDashboard.putString("state", turnRight.toString()); }
+   * 
+   * if (turnRight == TurnRightState.TURN) { SmartDashboard.putString("state",
+   * turnRight.toString()); setAll(0.5); if (turnTimer.get() >= 2) { setAll(0);
+   * turnRight = TurnRightState.STOP; SmartDashboard.putString("state",
+   * turnRight.toString()); } } if (turnRight == TurnRightState.STOP) { setAll(0);
+   * turnTimer.stop(); turnTimer.reset(); SmartDashboard.putString("state",
+   * turnRight.toString()); turnTimer.start(); if (turnTimer.get() >= 2.0) {
+   * turnRight = TurnRightState.START; SmartDashboard.putString("state",
+   * turnRight.toString()); turnTimer.stop(); turnTimer.reset(); } } } // else
+   * if(turnRight == TurnRightState.TURN) // {
+   * 
+   * /* if(turnCounter < 0.5) {
+   * //rightTankMotor1Controller.setSelectedSensorPosition(0); //int encoderGoal =
+   * 1000; //int encoderCurrent =
+   * rightTankMotor1Controller.getSelectedSensorPosition(); //double constant =
+   * 0.2 //double power = constant*(encoderGoal - encoderCurrent);
+   * rightTankMotor1Controller.set(turnCounter);
+   * rightTankMotor2Controller.set(turnCounter);
+   * leftTankMotor1Controller.set(turnCounter);
+   * leftTankMotor2Controller.set(turnCounter); turnCounter += 0.01; }
+   * if(turnCounter >= 0.5) { rightTankMotor1Controller.set(turnCounter);
+   * rightTankMotor2Controller.set(turnCounter);
+   * leftTankMotor1Controller.set(turnCounter);
+   * leftTankMotor2Controller.set(turnCounter); turnCounter -= 0.01; if
+   * (turnCounter <= 0) { setAll(0.0); turnRight = TurnRightState.STOP; } }
+   */
+  /*
+   * setAll(0.5); if(turnTimer.get() >= 2) { setAll(0); turnRight =
+   * TurnRightState.STOP; }
+   */
+  // }
+  /*
+   * else if (turnRight == TurnRightState.STOP) { turnTimer.start(); if
+   * (turnTimer.get() >= 2.0) { turnRight = TurnRightState.START;
+   * turnTimer.stop(); turnTimer.reset(); } }
+   * 
+   * 
+   * } else { turnRight = TurnRightState.START; turnTimer.stop();
+   * turnTimer.reset();
+   * 
+   * }
+   */
 
   public void RightAll(double power) {
     leftTankMotor2Controller.set(power);
